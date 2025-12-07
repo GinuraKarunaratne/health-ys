@@ -14,7 +14,6 @@ class SleepTrackerScreen extends StatefulWidget {
 class _SleepTrackerScreenState extends State<SleepTrackerScreen> {
   DateTime? _startTime;
   DateTime? _endTime;
-  int _quality = 3;
 
   @override
   void initState() {
@@ -111,76 +110,6 @@ class _SleepTrackerScreenState extends State<SleepTrackerScreen> {
                                   _endTime = time;
                                 });
                               },
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Sleep Quality',
-                              style: TextStyle(
-                                color: Color(0xFF002E34),
-                                fontSize: 16,
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(5, (index) {
-                                final quality = index + 1;
-                                final isSelected = quality <= _quality;
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _quality = quality;
-                                    });
-                                  },
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        width: 52,
-                                        height: 52,
-                                        decoration: BoxDecoration(
-                                          gradient: isSelected
-                                              ? const LinearGradient(
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                  colors: [
-                                                    Color(0xFF00707D),
-                                                    Color(0xFF4ECDC4),
-                                                  ],
-                                                )
-                                              : null,
-                                          color: isSelected
-                                              ? null
-                                              : const Color(0xFFE5F3F6),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(
-                                          isSelected ? Icons.star : Icons.star_outline,
-                                          size: 28,
-                                          color: isSelected
-                                              ? Colors.white
-                                              : const Color(0xFF88A8AF),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        '$quality',
-                                        style: TextStyle(
-                                          color: isSelected
-                                              ? const Color(0xFF00707D)
-                                              : const Color(0xFF88A8AF),
-                                          fontSize: 12,
-                                          fontFamily: 'Onest',
-                                          fontWeight: isSelected
-                                              ? FontWeight.w600
-                                              : FontWeight.w400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
                             ),
                             const SizedBox(height: 20),
                             Material(
@@ -398,27 +327,12 @@ class _SleepTrackerScreenState extends State<SleepTrackerScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem(
-                'Avg Duration',
-                SleepHelper.formatDuration(
-                  provider.getAverageDuration().toInt(),
-                ),
-                Icons.schedule_outlined,
-              ),
-              Container(
-                width: 1,
-                height: 60,
-                color: Colors.white24,
-              ),
-              _buildStatItem(
-                'Avg Quality',
-                provider.getAverageQuality().toStringAsFixed(1),
-                Icons.star_outline,
-              ),
-            ],
+          _buildStatItem(
+            'Avg Duration',
+            SleepHelper.formatDuration(
+              provider.getAverageDuration().toInt(),
+            ),
+            Icons.schedule_outlined,
           ),
         ],
       ),
@@ -532,20 +446,6 @@ class _SleepTrackerScreenState extends State<SleepTrackerScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        ...List.generate(
-                          5,
-                          (index) => Padding(
-                            padding: const EdgeInsets.only(right: 2),
-                            child: Icon(
-                              index < session.quality ? Icons.star : Icons.star_outline,
-                              size: 14,
-                              color: index < session.quality
-                                  ? const Color(0xFF00707D)
-                                  : const Color(0xFF88A8AF),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ],
@@ -591,7 +491,7 @@ class _SleepTrackerScreenState extends State<SleepTrackerScreen> {
       startTime: _startTime!.millisecondsSinceEpoch,
       endTime: _endTime!.millisecondsSinceEpoch,
       durationMinutes: duration,
-      quality: _quality,
+      quality: 0,
       date: DateHelper.formatDate(_endTime!),
     );
 
@@ -610,7 +510,6 @@ class _SleepTrackerScreenState extends State<SleepTrackerScreen> {
       setState(() {
         _startTime = null;
         _endTime = null;
-        _quality = 3;
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

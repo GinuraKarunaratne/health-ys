@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/health_record.dart';
 import '../../providers/health_records_provider.dart';
-import '../../providers/sleep_provider.dart';
 import '../records/records_list_screen.dart';
 import '../sleep/sleep_tracker_screen.dart';
 import '../medication/medication_tracker_screen.dart';
@@ -214,7 +213,7 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                                 ),
                                 const SizedBox(height: 25),
 
-                                // Stats Grid (4 cards)
+                                // Stats Grid (3 cards)
                                 Wrap(
                                   alignment: WrapAlignment.start,
                                   runAlignment: WrapAlignment.start,
@@ -225,22 +224,20 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
                                       value: '${stats['steps'] ?? 0}',
                                       label: 'Step Count',
                                       icon: Icons.directions_walk_outlined,
+                                      fullWidth: false,
                                     ),
                                     _buildStatCard(
                                       value: '${stats['calories'] ?? 0}',
                                       label: 'Calories',
                                       icon: Icons.local_fire_department_outlined,
+                                      fullWidth: false,
                                     ),
                                     _buildStatCard(
                                       value:
                                           '${((stats['water'] ?? 0) / 1000).toStringAsFixed(1)}L',
                                       label: 'Water Intake',
                                       icon: Icons.water_drop_outlined,
-                                    ),
-                                    _buildStatCard(
-                                      value: _getSleepQuality(context),
-                                      label: 'Sleep Quality',
-                                      icon: Icons.bedtime_outlined,
+                                      fullWidth: true,
                                     ),
                                   ],
                                 ),
@@ -289,10 +286,13 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
     required String value,
     required String label,
     required IconData icon,
+    bool fullWidth = false,
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
     // Calculate width: screen width - (left padding + right padding + gap)
-    final cardWidth = (screenWidth - 50) / 2;
+    final cardWidth = fullWidth
+        ? (screenWidth - 40)
+        : (screenWidth - 50) / 2;
 
     return Container(
       width: cardWidth,
@@ -458,131 +458,127 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
 
     return Container(
       width: double.infinity,
-      height: 210,
-      color: Colors.transparent,
-      child: Stack(
+      padding: const EdgeInsets.all(20),
+      decoration: ShapeDecoration(
+        color: const Color(0xFFF8FDFF),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      child: Row(
         children: [
           // Circle gauge on left
-          Positioned(
-            left: 0,
-            top: 20,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CustomPaint(
-                  size: const Size(130, 130),
-                  painter: WaterCircleProgressPainter(percentage),
-                ),
-                Icon(
-                  Icons.water_drop,
-                  size: 40,
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ],
-            ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              CustomPaint(
+                size: const Size(130, 130),
+                painter: WaterCircleProgressPainter(percentage),
+              ),
+              Icon(
+                Icons.water_drop,
+                size: 40,
+                color: Colors.white.withOpacity(0.9),
+              ),
+            ],
           ),
-
+          const SizedBox(width: 30),
           // Text on right
-          Positioned(
-            left: 160,
-            top: 35,
-            child: SizedBox(
-              width: 200,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Water Intake',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontFamily: 'Onest',
-                      fontWeight: FontWeight.w400,
-                      height: 1,
-                      letterSpacing: -0.73,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Water Intake',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'Onest',
+                    fontWeight: FontWeight.w400,
+                    height: 1,
+                    letterSpacing: -0.73,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () => _showEditWaterGoalDialog(context),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '$currentWater',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 25,
+                            fontFamily: 'Onest',
+                            fontWeight: FontWeight.w400,
+                            height: 1,
+                            letterSpacing: -0.73,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '/$goalWater ML',
+                          style: const TextStyle(
+                            color: Color(0xFF88A8AF),
+                            fontSize: 25,
+                            fontFamily: 'Onest',
+                            fontWeight: FontWeight.w400,
+                            height: 1,
+                            letterSpacing: -0.73,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () => _showEditWaterGoalDialog(context),
-                    child: Text.rich(
-                      TextSpan(
+                ),
+                const SizedBox(height: 15),
+                // Add Water Button
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RecordsListScreen(),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00707D),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          TextSpan(
-                            text: '$currentWater',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 25,
-                              fontFamily: 'Onest',
-                              fontWeight: FontWeight.w400,
-                              height: 1,
-                              letterSpacing: -0.73,
-                            ),
+                          Icon(
+                            Icons.add,
+                            size: 16,
+                            color: Colors.white,
                           ),
-                          TextSpan(
-                            text: '/$goalWater ML',
-                            style: const TextStyle(
-                              color: Color(0xFF88A8AF),
-                              fontSize: 25,
+                          SizedBox(width: 4),
+                          Text(
+                            'Add Water',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
                               fontFamily: 'Onest',
-                              fontWeight: FontWeight.w400,
-                              height: 1,
-                              letterSpacing: -0.73,
-                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  // Add Water Button
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RecordsListScreen(),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(6),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00707D),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.add,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              'Add Water',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -590,11 +586,6 @@ class _DashboardHomeScreenState extends State<DashboardHomeScreen> {
     );
   }
 
-  String _getSleepQuality(BuildContext context) {
-    final sleepProvider = Provider.of<SleepProvider>(context, listen: false);
-    final avgQuality = sleepProvider.getAverageQuality();
-    return avgQuality > 0 ? avgQuality.toStringAsFixed(1) : 'N/A';
-  }
 
   Future<void> _showEditWaterGoalDialog(BuildContext context) async {
     final controller = TextEditingController(text: _waterGoal.toString());

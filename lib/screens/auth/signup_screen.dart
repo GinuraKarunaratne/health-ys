@@ -61,6 +61,13 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully!'),
+          backgroundColor: Color(0xFF00707D),
+          duration: Duration(seconds: 2),
+        ),
+      );
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const DashboardScreen()),
       );
